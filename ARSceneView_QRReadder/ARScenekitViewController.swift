@@ -26,9 +26,9 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
     //Sceen Text to show _DeviceMetrics
     var _DeviceMetrics : String = ""
     var textNode = SCNNode()
-    var txtScnText = SCNText(string: "Initialization message...", extrusionDepth: 1)
+    var txtScnText = SCNText(string: "Initializing...", extrusionDepth: 1)
     let configuration = ARWorldTrackingConfiguration()
-    var _sDisplayMessage : String = "Initialization message"
+    var _sDisplayMessage : String = "Initializing..."
     
     //timer controller to refresh page
     var _timerCount : Int = 0
@@ -190,7 +190,8 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         
         textNode.scale = SCNVector3(x:0.004, y:0.004, z:0.004)
         textNode.geometry = txtScnText
-        textNode.position = position
+        //textNode.position = position
+        textNode.position = SCNVector3(x:0,y:0.02,z:-0.5)
         //textNode.constraints = [SCNBillboardConstraint()]
         //textNode.orientation = SCNVector3Make(transform.m41, transform.m42, transform.m43)
         self.anSceneView.scene.rootNode.addChildNode(textNode)
