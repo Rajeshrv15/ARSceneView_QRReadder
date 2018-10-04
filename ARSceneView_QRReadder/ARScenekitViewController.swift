@@ -95,31 +95,11 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, APIManagerD
        print(" Password : \(oPass)")
        print("AnjRes 2 : \(self._DeviceMetrics)")
        AnjInhousePerformCall(anAccessURL: oDevDataUrl, anUserName: oUsrName, anPassword: oPass)
-       /*let oAPIManager = APIManager()
-       _DeviceMetrics = oAPIManager.AnPerformCallToServerPls(anAccessURL: oDevDataUrl, anUserName: oUsrName, anPassword: oPass)
-        _DeviceMetrics = oAPIManager.anjResponseToSend
-       oAPIManager.AnPerformCall(anAccessURL: oDevDataUrl, anUserName: oUsrName, anPassword: oPass)*/
-        /*oAPIManager.AnPerformCallToServer(anAccessURL: oDevDataUrl, anUserName: oUsrName, anPassword: oPass, _completion: { (anPres) in
-            self._DeviceMetrics = anPres
-            /*DispatchQueue.main.async {
-                self._DeviceMetrics = anPres
-            }*/
-             //self._DeviceMetrics = anPres
-            
-              print("AnjRes 1 : \(self._DeviceMetrics)")
-        })*/
        
        var dictionary:NSDictionary?
        if let data = _DeviceMetrics.data(using: String.Encoding.utf8) {
             do {
                 dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] as! NSDictionary
-                
-                /*if let myDictionary = dictionary
-                {
-                    print(" DeviceID : \(myDictionary["DeviceID"]!)")
-                    print(" DeviceIoTHub : \(myDictionary["DeviceIoTHub"]!)")
-                    print(" DeviceEmittingParams : \(myDictionary["DeviceEmittingParams"]!)")
-                }*/
                 
             } catch let error as NSError {
                 print(error)
