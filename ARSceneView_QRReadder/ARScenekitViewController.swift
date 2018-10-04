@@ -11,21 +11,29 @@ import ARKit
 import SceneKit
 import Foundation
 
-class ARScenekitViewController: UIViewController, ARSCNViewDelegate {
+class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewControllerDelegate {
+    
     
     @IBOutlet weak var anSceneView: ARSCNView!
-    public var _CurrentIoTDeviceToWatch : String = "testmessage"
-    let configuration = ARWorldTrackingConfiguration()
     
+    //Current Device ID & end point details
+    public var _CurrentIoTDeviceToWatch : String = "CodedDeviceId"
     var oDevID : String = ""
     var oDevDataUrl : String = ""
     var oUsrName : String = ""
     var oPass : String = ""
     
-    var _timerCount : Int = 0
-    var timerDoWork: Timer!
-    
+    //Sceen Text to show _DeviceMetrics
     var _DeviceMetrics : String = ""
+    var textNode = SCNNode()
+    var txtScnText = SCNText(string: "Initialization message...", extrusionDepth: 1)
+    let configuration = ARWorldTrackingConfiguration()
+    var _sDisplayMessage : String = "Initialization message"
+    
+    //timer controller to refresh page
+    var _timerCount : Int = 0
+    var timerReadFromServer: Timer!
+    var timerUpdateTextNode: Timer!
     
     override func viewDidLoad() {
         
@@ -52,7 +60,15 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate {
         
         ReadConnectionDetails() //Read the connection details from QR code
         
-        timerDoWork = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(ReadDisplayValueFromServer), userInfo: nil, repeats: true)
+        timerReadFromServer = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(ReadDisplayValueFromServer), userInfo: nil, repeats: true)
+        timerUpdateTextNode = Timer.scheduledTimer(timeInterval: 4, target: self, selector: #selector(UpdateTextNode), userInfo: nil, repeats: true)
+    }
+    
+    func InitTextNode() {
+        textNode.scale = SCNVector3(x:0.004, y:0.004, z:0.004)
+        textNode.geometry = txtScnText
+        textNode.position = SCNVector3(x:0,y:0.02,z:-0.5)
+        self.anSceneView.scene.rootNode.addChildNode(textNode)
     }
 
     override func didReceiveMemoryWarning() {
@@ -65,6 +81,11 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate {
         dismiss(animated: true, completion: nil)
     }
     
+    func finishPassing(string: String) {
+        _CurrentIoTDeviceToWatch = string
+    }
+    
+    //To read the connectivity details from QR code response
     func ReadConnectionDetails() {
         var dictionary:NSDictionary?
         if let data = _CurrentIoTDeviceToWatch.data(using: String.Encoding.utf8) {
@@ -83,6 +104,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
+    //To read device metrics
     @objc func ReadDisplayValueFromServer() {
        _timerCount = _timerCount + 1
         print("Current timer count  \(_timerCount)")
@@ -104,7 +126,11 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate {
                 if let myDictionary = dictionary
                 {
                     print("DeviceID : \(myDictionary["DeviceID"] ?? "default time")")
-                    print("DeviceEmittingParams : \(myDictionary["DeviceEmittingParams"] ?? "default id \(_timerCount)")")
+                    _sDisplayMessage = myDictionary["DeviceEmittingParams"] as! String
+                    if _sDisplayMessage.isEmpty {
+                        _sDisplayMessage = "default id \(_timerCount)"
+                    }
+                    print("DeviceEmittingParams : \(_sDisplayMessage)")
                 }
             } catch let error as NSError {
                 print(error)
@@ -112,6 +138,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
+    //Read device metrics from Server URL
     func GetDeviceMetricsFromServer(anAccessURL : String, anUserName: String, anPassword: String ) {
         let config = URLSessionConfiguration.default
         
@@ -138,6 +165,33 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate {
         }).resume()
     }
     
+    @objc func UpdateTextNode() {
+        guard let pointofView = self.anSceneView.pointOfView else {return}
+        let transform = pointofView.transform
+        let orientation = SCNVector3(-transform.m31, -transform.m32, -transform.m33)
+        let location = SCNVector3(transform.m41, transform.m42, transform.m43)
+        let position = orientation + location
+        //if let imageAnchor = anchor as? ARImageAnchor {
+        textNode.removeFromParentNode()
+        //self._sDisplayMessage += " Try adding this text ..."
+        txtScnText = SCNText(string: String(self._sDisplayMessage), extrusionDepth:1)
+        //Anj pH - To show dynamic text message
+        let material = SCNMaterial()
+        material.diffuse.contents = UIColor.green
+        txtScnText.materials = [material]
+        
+        let eulerAngles = self.anSceneView.session.currentFrame?.camera.eulerAngles
+        textNode.eulerAngles = SCNVector3((eulerAngles?.x)!, (eulerAngles?.y)!, (eulerAngles?.z)! + Float(1.57))
+        
+        textNode.scale = SCNVector3(x:0.004, y:0.004, z:0.004)
+        textNode.geometry = txtScnText
+        textNode.position = position
+        //textNode.constraints = [SCNBillboardConstraint()]
+        //textNode.orientation = SCNVector3Make(transform.m41, transform.m42, transform.m43)
+        self.anSceneView.scene.rootNode.addChildNode(textNode)
+        print("Received message : " + self._sDisplayMessage + " Trying to show @ ", position.x, position.y, position.z)
+    }
+    
     /*
     // MARK: - Navigation
 
@@ -154,4 +208,8 @@ struct IoTDeviceData {
     let DeviceID: String
     let DeviceIoTHub: String
     let DeviceEmittingParams: String
+}
+
+func + (left: SCNVector3, right:SCNVector3) -> SCNVector3 {
+    return SCNVector3Make(left.x+right.x, left.y+right.y, left.z+right.z)
 }
