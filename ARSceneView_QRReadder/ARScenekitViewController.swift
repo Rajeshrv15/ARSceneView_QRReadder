@@ -107,16 +107,16 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
     //To read device metrics
     @objc func ReadDisplayValueFromServer() {
        _timerCount = _timerCount + 1
-        print("Current timer count  \(_timerCount)")
-       print(" DeviceID : \(oDevID)")
-       print(" DeviceDataUrl : \(oDevDataUrl)")
-       print(" UserName : \(oUsrName)")
-       print(" Password : \(oPass)")
+       print("Current timer count  \(_timerCount)")
+       //print(" DeviceID : \(oDevID)")
+       //print(" DeviceDataUrl : \(oDevDataUrl)")
+       //print(" UserName : \(oUsrName)")
+       //print(" Password : \(oPass)")
        //print(" Previous Response : \(self._DeviceMetrics)")
        GetDeviceMetricsFromServer(anAccessURL: oDevDataUrl, anUserName: oUsrName, anPassword: oPass)
        
         if _DeviceMetrics.isEmpty {
-            print("Value yet to assign")
+            //print("Value yet to assign")
             return
         }
        var dictionary:NSDictionary?
@@ -125,12 +125,17 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
                 dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] as NSDictionary?
                 if let myDictionary = dictionary
                 {
-                    print("DeviceID : \(myDictionary["DeviceID"] ?? "default time")")
-                    _sDisplayMessage = myDictionary["DeviceEmittingParams"] as! String
-                    if _sDisplayMessage.isEmpty {
-                        _sDisplayMessage = "default id \(_timerCount)"
+                    print("DeviceID : \(myDictionary["DeviceID"] ?? "default DeviceID")")
+                    var anEmitParam = myDictionary.value(forKey: "DeviceEmittingParams") as? String
+                    if (anEmitParam == nil) {
+                        //print("DeviceEmittingParams 1 : \(self._sDisplayMessage)")
+                        anEmitParam = "default text \(_timerCount)"
+                        self._sDisplayMessage = anEmitParam!
                     }
-                    print("DeviceEmittingParams : \(_sDisplayMessage)")
+                    else {
+                        self._sDisplayMessage = anEmitParam!
+                    }
+                    //print("DeviceEmittingParams 2 : \(self._sDisplayMessage)")
                 }
             } catch let error as NSError {
                 print(error)
@@ -149,7 +154,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             config.httpAdditionalHeaders = ["Authorization" : authString]
         }
         
-        print("URL : " + anAccessURL)
+        //print("URL : " + anAccessURL)
         let session = URLSession(configuration: config)
         
         let anUrl = URL(string: anAccessURL)!
