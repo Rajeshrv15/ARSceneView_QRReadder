@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="ipad10_5" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="ARSceneView_QRReadder" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="834" height="1112"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="T40-bV-eTb">
+                                <rect key="frame" x="117" y="591" width="60" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="feJ-TV-IAL">
+                                <rect key="frame" x="385.56753741294392" y="220" width="60.000000000000057" height="29.999999999999972"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Read QR"/>
+                                <connections>
+                                    <action selector="onLoadQRReader:" destination="BYZ-38-t0r" eventType="touchUpInside" id="3sL-J5-7yG"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IdW-zX-A8m">
+                                <rect key="frame" x="354.81969856404623" y="275" width="122.00000000000004" height="30.000000000000014"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Read Device Data"/>
+                                <connections>
+                                    <action selector="onReadDeviceData:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Ns8-tX-OrA"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                    </view>
+                    <connections>
+                        <segue destination="YI7-97-lOI" kind="show" identifier="AnjShowDeviceData" id="dY4-TR-ouG"/>
+                        <segue destination="vdI-o2-03j" kind="show" identifier="AnjShowQRReader" id="764-It-XJj"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="117.26618705035972" y="117.08633093525181"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="Srv-KZ-0ic">
+            <objects>
+                <viewController id="vdI-o2-03j" customClass="QRViewController" customModule="ARSceneView_QRReadder" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="cRl-q5-cCW">
+                        <rect key="frame" x="0.0" y="0.0" width="834" height="1112"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MWK-Zw-9p2">
+                                <rect key="frame" x="355" y="100" width="124" height="30"/>
+                                <state key="normal" title="Close"/>
+                                <connections>
+                                    <action selector="OnQRViewClose:" destination="vdI-o2-03j" eventType="touchUpInside" id="0ro-pe-eed"/>
+                                </connections>
+                            </button>
+                            <view contentMode="bottom" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ZL-cU-UlN" customClass="QRView">
+                                <rect key="frame" x="117" y="137" width="600" height="858"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="scrollViewTexturedBackgroundColor"/>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="MWK-Zw-9p2" firstAttribute="leading" secondItem="cRl-q5-cCW" secondAttribute="leadingMargin" constant="334.88" id="WoP-J7-oDa"/>
+                            <constraint firstItem="MWK-Zw-9p2" firstAttribute="top" secondItem="Zvs-K4-YhA" secondAttribute="top" constant="80" id="tNa-jN-jAc"/>
+                            <constraint firstItem="Zvs-K4-YhA" firstAttribute="trailing" secondItem="MWK-Zw-9p2" secondAttribute="trailing" constant="355.12" id="vj2-Jx-Vsl"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="Zvs-K4-YhA"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sn9-5s-j63" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="955.39568345323744" y="594.60431654676256"/>
+        </scene>
+        <!--Scenekit View Controller-->
+        <scene sceneID="T6Y-22-5lu">
+            <objects>
+                <viewController id="YI7-97-lOI" customClass="ARScenekitViewController" customModule="ARSceneView_QRReadder" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Uto-PB-VPQ">
+                        <rect key="frame" x="0.0" y="0.0" width="834" height="1112"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <arscnView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Cdy-rt-F6v">
+                                <rect key="frame" x="0.0" y="120" width="834" height="992"/>
+                            </arscnView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lXM-YP-jYH">
+                                <rect key="frame" x="379" y="49" width="76" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Close View"/>
+                                <connections>
+                                    <action selector="OnCloseClick:" destination="YI7-97-lOI" eventType="touchUpInside" id="hGF-47-IkH"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="Cdy-rt-F6v" firstAttribute="trailing" secondItem="nhB-Vr-EJA" secondAttribute="trailing" id="1jM-v4-Fwf"/>
+                            <constraint firstItem="Cdy-rt-F6v" firstAttribute="bottom" secondItem="nhB-Vr-EJA" secondAttribute="bottom" id="Emv-m1-pC6"/>
+                            <constraint firstItem="Cdy-rt-F6v" firstAttribute="leading" secondItem="nhB-Vr-EJA" secondAttribute="leading" id="Ffj-n3-cNy"/>
+                            <constraint firstItem="Cdy-rt-F6v" firstAttribute="top" secondItem="nhB-Vr-EJA" secondAttribute="top" constant="100" id="J5f-Io-RvE"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="nhB-Vr-EJA"/>
+                    </view>
+                    <connections>
+                        <outlet property="anSceneView" destination="Cdy-rt-F6v" id="gNy-yT-IEw"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ea6-oh-R8z" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="956" y="-117"/>
+        </scene>
+    </scenes>
+</document>
