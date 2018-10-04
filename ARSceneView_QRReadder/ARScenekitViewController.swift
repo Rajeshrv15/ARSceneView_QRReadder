@@ -11,7 +11,7 @@ import ARKit
 import SceneKit
 import Foundation
 
-class ARScenekitViewController: UIViewController, ARSCNViewDelegate, APIManagerDelegate {
+class ARScenekitViewController: UIViewController, ARSCNViewDelegate {
     
     @IBOutlet weak var anSceneView: ARSCNView!
     public var _CurrentIoTDeviceToWatch : String = "testmessage"
@@ -52,7 +52,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, APIManagerD
         
         ReadConnectionDetails() //Read the connection details from QR code
         
-        timerDoWork = Timer.scheduledTimer(timeInterval: 9, target: self, selector: #selector(ReadDisplayValueFromServer), userInfo: nil, repeats: true)
+        timerDoWork = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(ReadDisplayValueFromServer), userInfo: nil, repeats: true)
     }
 
     override func didReceiveMemoryWarning() {
@@ -69,9 +69,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, APIManagerD
         var dictionary:NSDictionary?
         if let data = _CurrentIoTDeviceToWatch.data(using: String.Encoding.utf8) {
             do {
-                
-                dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] as! NSDictionary
-                
+                dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] as NSDictionary?
                 if let myDictionary = dictionary
                 {
                     oDevID = myDictionary["DeviceID"] as! String
@@ -79,37 +77,42 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, APIManagerD
                     oUsrName = myDictionary["UserName"] as! String
                     oPass = myDictionary["Password"] as! String
                 }
-                
             } catch let error as NSError {
                 print(error)
             }
         }
     }
     
-    @objc func ReadDisplayValueFromServer() -> String {
+    @objc func ReadDisplayValueFromServer() {
        _timerCount = _timerCount + 1
         print("Current timer count  \(_timerCount)")
        print(" DeviceID : \(oDevID)")
        print(" DeviceDataUrl : \(oDevDataUrl)")
        print(" UserName : \(oUsrName)")
        print(" Password : \(oPass)")
-       print("AnjRes 2 : \(self._DeviceMetrics)")
-       AnjInhousePerformCall(anAccessURL: oDevDataUrl, anUserName: oUsrName, anPassword: oPass)
+       //print(" Previous Response : \(self._DeviceMetrics)")
+       GetDeviceMetricsFromServer(anAccessURL: oDevDataUrl, anUserName: oUsrName, anPassword: oPass)
        
+        if _DeviceMetrics.isEmpty {
+            print("Value yet to assign")
+            return
+        }
        var dictionary:NSDictionary?
        if let data = _DeviceMetrics.data(using: String.Encoding.utf8) {
             do {
-                dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] as! NSDictionary
-                
+                dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] as NSDictionary?
+                if let myDictionary = dictionary
+                {
+                    print("DeviceID : \(myDictionary["DeviceID"] ?? "default time")")
+                    print("DeviceEmittingParams : \(myDictionary["DeviceEmittingParams"] ?? "default id \(_timerCount)")")
+                }
             } catch let error as NSError {
                 print(error)
             }
         }
-        
-        return "AnjRes"
     }
     
-    func AnjInhousePerformCall(anAccessURL : String, anUserName: String, anPassword: String ) {
+    func GetDeviceMetricsFromServer(anAccessURL : String, anUserName: String, anPassword: String ) {
         let config = URLSessionConfiguration.default
         
         if (!anUserName.isEmpty && !anPassword.isEmpty) {
@@ -132,17 +135,9 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, APIManagerD
             }
             anResponse = String(data: data!, encoding: .utf8)!
             self._DeviceMetrics = anResponse
-            
-            print("Am Called after completion")
         }).resume()
-        print("Anj Please help me : \(self._DeviceMetrics)")
     }
     
-    
-    func finishReadingResponse(code: String) {
-        print("REceived : \(code)")
-        self._DeviceMetrics = code
-    }
     /*
     // MARK: - Navigation
 
