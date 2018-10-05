@@ -64,10 +64,10 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         timerUpdateTextNode = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(UpdateTextNode), userInfo: nil, repeats: true)
     }
     
-    func InitTextNode() {
-        textNode.scale = SCNVector3(x:0.004, y:0.004, z:0.004)
+    func PlaceTextNode() {
+        textNode.scale = SCNVector3(x:0.001, y:0.001, z:0.001)
         textNode.geometry = txtScnText
-        textNode.position = SCNVector3(x:0,y:0.02,z:-0.5)
+        textNode.position = SCNVector3(x:-0.1,y:-0.15,z:-0.5)
         self.anSceneView.scene.rootNode.addChildNode(textNode)
     }
 
@@ -191,19 +191,20 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         txtScnText = SCNText(string: String(self._sDisplayMessage), extrusionDepth:1)
         //Anj pH - To show dynamic text message
         let material = SCNMaterial()
-        material.diffuse.contents = UIColor.blue
+        material.diffuse.contents = UIColor.black
         txtScnText.materials = [material]
         
         let eulerAngles = self.anSceneView.session.currentFrame?.camera.eulerAngles
         textNode.eulerAngles = SCNVector3((eulerAngles?.x)!, (eulerAngles?.y)!, (eulerAngles?.z)! + Float(1.57))
         
-        textNode.scale = SCNVector3(x:0.004, y:0.004, z:0.004)
+        PlaceTextNode()
+        /*textNode.scale = SCNVector3(x:0.001, y:0.001, z:0.001)
         textNode.geometry = txtScnText
         //textNode.position = position
-        textNode.position = SCNVector3(x:0,y:0.02,z:-0.5)
+        textNode.position = SCNVector3(x:0,y:0,z:-0.5)
         //textNode.constraints = [SCNBillboardConstraint()]
         //textNode.orientation = SCNVector3Make(transform.m41, transform.m42, transform.m43)
-        self.anSceneView.scene.rootNode.addChildNode(textNode)
+        self.anSceneView.scene.rootNode.addChildNode(textNode)*/
         print("Received message : " + self._sDisplayMessage + " Trying to show @ ", position.x, position.y, position.z)
     }
     
