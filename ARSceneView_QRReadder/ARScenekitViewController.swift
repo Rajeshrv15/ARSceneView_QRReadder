@@ -193,6 +193,10 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         let material = SCNMaterial()
         material.diffuse.contents = UIColor.black
         txtScnText.materials = [material]
+        //txtScnText.containerFrame = CGRect(origin: .zero, size: CGSize(width: 180, height: 180))
+        txtScnText.font = UIFont(name: "Helvetica Neue", size: 15)
+        
+        txtScnText.isWrapped = true
         
         let eulerAngles = self.anSceneView.session.currentFrame?.camera.eulerAngles
         textNode.eulerAngles = SCNVector3((eulerAngles?.x)!, (eulerAngles?.y)!, (eulerAngles?.z)! + Float(1.57))
