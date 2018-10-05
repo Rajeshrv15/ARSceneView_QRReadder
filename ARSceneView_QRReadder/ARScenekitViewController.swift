@@ -53,7 +53,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         // Set the scene to the view
         anSceneView.scene = scene
         
-        self.anSceneView.debugOptions = [ARSCNDebugOptions.showWorldOrigin, ARSCNDebugOptions.showFeaturePoints]
+        //self.anSceneView.debugOptions = [ARSCNDebugOptions.showWorldOrigin, ARSCNDebugOptions.showFeaturePoints]
         self.anSceneView.showsStatistics = true
         self.anSceneView.session.run(configuration)
         self.anSceneView.delegate = self
@@ -61,7 +61,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         ReadConnectionDetails() //Read the connection details from QR code
         
         timerReadFromServer = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(ReadDisplayValueFromServer), userInfo: nil, repeats: true)
-        timerUpdateTextNode = Timer.scheduledTimer(timeInterval: 4, target: self, selector: #selector(UpdateTextNode), userInfo: nil, repeats: true)
+        timerUpdateTextNode = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(UpdateTextNode), userInfo: nil, repeats: true)
     }
     
     func InitTextNode() {
@@ -93,15 +93,24 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
                 dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] as NSDictionary?
                 if let myDictionary = dictionary
                 {
-                    oDevID = myDictionary["DeviceID"] as! String
-                    oDevDataUrl = myDictionary["DeviceDataUrl"] as! String
-                    oUsrName = myDictionary["UserName"] as! String
-                    oPass = myDictionary["Password"] as! String
+                    oDevID = ReadContentString(dictInput: myDictionary, dictKey: "DeviceID")
+                    oDevDataUrl = ReadContentString(dictInput: myDictionary, dictKey: "DeviceDataUrl")
+                    oUsrName = ReadContentString(dictInput: myDictionary, dictKey: "UserName")
+                    oPass = ReadContentString(dictInput: myDictionary, dictKey: "Password")
                 }
             } catch let error as NSError {
                 print(error)
             }
         }
+    }
+    
+    func ReadContentString(dictInput: NSDictionary, dictKey: String) -> String {
+        var oResStr = "NA"
+        let anEmitParam = dictInput.value(forKey: dictKey) as? String
+        if (anEmitParam != nil) {
+            oResStr = anEmitParam!
+        }
+        return oResStr;
     }
     
     //To read device metrics
@@ -182,7 +191,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         txtScnText = SCNText(string: String(self._sDisplayMessage), extrusionDepth:1)
         //Anj pH - To show dynamic text message
         let material = SCNMaterial()
-        material.diffuse.contents = UIColor.green
+        material.diffuse.contents = UIColor.blue
         txtScnText.materials = [material]
         
         let eulerAngles = self.anSceneView.session.currentFrame?.camera.eulerAngles
