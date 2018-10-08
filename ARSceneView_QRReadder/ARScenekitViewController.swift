@@ -180,7 +180,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
     @objc func ReadDisplayValueFromServer() {
        _timerCount = _timerCount + 1
        print("Current timer count  \(_timerCount)")
-       //print(" DeviceID : \(oDevID)")
+       print(" DeviceID : \(oDevID)")
        //print(" DeviceDataUrl : \(oDevDataUrl)")
        //print(" UserName : \(oUsrName)")
        //print(" Password : \(oPass)")
