@@ -52,7 +52,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         // Set the scene to the view
         anSceneView.scene = scene
         
-        //self.anSceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]//ARSCNDebugOptions.showWorldOrigin,
+        //self.anSceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
         self.anSceneView.showsStatistics = true
         //self.anSceneView.session.run(configuration)
         self.anSceneView.delegate = self
@@ -62,6 +62,32 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         
         timerReadFromServer = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(ReadDisplayValueFromServer), userInfo: nil, repeats: true)
         timerUpdateTextNode = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(UpdateTextNode), userInfo: nil, repeats: true)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(anDidTap))
+        anSceneView.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc func anDidTap(recognizer : UIGestureRecognizer) {
+        let scenView = recognizer.view as! SCNView
+        let touchLocation = recognizer.location(in: scenView)
+        let hitResults = scenView.hitTest(touchLocation, options: [:])
+        
+        if !hitResults.isEmpty {
+            let node = hitResults[0].node
+            print("Node detected on tap")
+        }
+        /*let results = self.anSceneView.hitTest(gesture.location(in: gesture.view), types: ARHitTestResult.ResultType.featurePoint)
+        guard let result: ARHitTestResult = results.first else {
+            return
+        }
+        
+        let tappedNode = self.anSceneView.hitTest(gesture.location(in: gesture.view), options: [:])
+        
+        if !tappedNode.isEmpty {
+            print("Tap captured")
+            return
+        }
+        print("Not captured")*/
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -80,28 +106,32 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        anSceneView.session.pause()
+    }
+    
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         if #available(iOS 12.0, *) {
             if anchor is ARObjectAnchor {
                 print ("Calendar detected")
                 _ParentNodeForTextNode = node
+                //anchor.
+                /*let text = SCNText(string: "Calendar detected", extrusionDepth: 0.1)
+                text.firstMaterial?.diffuse.contents = UIColor.red
+                var txtNode = SCNNode(geometry: text)
+                textNode.scale = SCNVector3(0.01,0.01,0.01)
+                textNode.position = node.position
+                print(node.position.x)
+                print(node.position.y)
+                print(node.position.z)
+                node.addChildNode(txtNode)*/
+                
             }
         } else {
             print ("Calendar not detected")
         }
-    }
-    
-    func PlaceTextNode() {
-        textNode.scale = SCNVector3(x:0.01, y:0.01, z:0.01)
-        //textNode.scale = SCNVector3(x:0.001, y:0.001, z:0.001)
-        textNode.geometry = txtScnText
-        //textNode.position = SCNVector3(x:-0.1,y:-0.15,z:-0.1)
-        //textNode.position = SCNVector3(x:0,y:0.1,z:0)
-        //self.anSceneView.scene.rootNode.addChildNode(textNode)
-        if _ParentNodeForTextNode == nil {
-            return
-        }
-        _ParentNodeForTextNode.addChildNode(textNode)
     }
     
     override func didReceiveMemoryWarning() {
@@ -229,30 +259,6 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         lstSCNNodes .forEach { item in
             _ParentNodeForTextNode.addChildNode(item)
         }
-        
-        return
-        //guard let pointofView = self.anSceneView.pointOfView else {return}
-        //let transform = pointofView.transform
-        //let orientation = SCNVector3(-transform.m31, -transform.m32, -transform.m33)
-        //let location = SCNVector3(transform.m41, transform.m42, transform.m43)
-        //let position = orientation + location
-        //if let imageAnchor = anchor as? ARImageAnchor {
-        textNode.removeFromParentNode()
-        //self._sDisplayMessage += " Try adding this text ..."
-        txtScnText = SCNText(string: String(self._sDisplayMessage), extrusionDepth:1)
-        //Anj pH - To show dynamic text message
-        let material = SCNMaterial()
-        material.diffuse.contents = UIColor.black
-        txtScnText.materials = [material]
-        txtScnText.containerFrame = CGRect(origin: .zero, size: CGSize(width: 250, height: 100))
-        txtScnText.font = UIFont(name: "Helvetica Neue", size: 15)
-        
-        txtScnText.isWrapped = true
-        
-        let eulerAngles = self.anSceneView.session.currentFrame?.camera.eulerAngles
-        textNode.eulerAngles = SCNVector3((eulerAngles?.x)!, (eulerAngles?.y)!, (eulerAngles?.z)! + Float(1.57))
-        
-        PlaceTextNode()
     }
     
     func GetIndividualTextNode(stDisplayText : String) -> Array<SCNNode> {
@@ -277,22 +283,11 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             anTxtNode.eulerAngles = SCNVector3((eulerAngles?.x)!, (eulerAngles?.y)!, (eulerAngles?.z)! + Float(1.57))
             lstSCNodesText.append(anTxtNode)
             iYPosition = iYPosition + 0.4
-            print(iYPosition)
+            //print(iYPosition)
         }
         
         return lstSCNodesText
-    }
-    
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
+    }    
 }
 
 struct IoTDeviceData {
