@@ -24,6 +24,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
     var oPass : String = ""
     
     //Sceen Text to show _DeviceMetrics
+    var _ParentNodeForTextNode : SCNNode!
     var _DeviceMetrics : String = ""
     var textNode = SCNNode()
     var txtScnText = SCNText(string: "Initializing...", extrusionDepth: 1)
@@ -53,10 +54,12 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         // Set the scene to the view
         anSceneView.scene = scene
         
-        //self.anSceneView.debugOptions = [ARSCNDebugOptions.showWorldOrigin, ARSCNDebugOptions.showFeaturePoints]
+        self.anSceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]//ARSCNDebugOptions.showWorldOrigin,
         self.anSceneView.showsStatistics = true
-        self.anSceneView.session.run(configuration)
+        //self.anSceneView.session.run(configuration)
         self.anSceneView.delegate = self
+        /*let anTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ShowInThisLocation))
+        self.anSceneView.addGestureRecognizer(anTapGestureRecognizer)*/
         
         ReadConnectionDetails() //Read the connection details from QR code
         
@@ -64,12 +67,62 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         timerUpdateTextNode = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(UpdateTextNode), userInfo: nil, repeats: true)
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if #available(iOS 12.0, *) {
+            guard let anRefCalendarObject = ARReferenceObject.referenceObjects(inGroupNamed: "anARResources", bundle: nil) else {
+                print("unable to load resource")
+                return
+            }
+            configuration.detectionObjects = anRefCalendarObject
+            self.anSceneView.session.run(configuration)
+            print("Calendar Resource loaded...")
+        } else {
+            // Fallback on earlier versions
+        }
+        
+    }
+    
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        if #available(iOS 12.0, *) {
+            if anchor is ARObjectAnchor {
+                print ("Calendar detected")
+                _ParentNodeForTextNode = node
+            }
+        } else {
+            print ("Calendar not detected")
+        }
+    }
+    
+    @objc func ShowInThisLocation(recognizer: UITapGestureRecognizer) {
+        /*let sceneView = recognizer.view as! SCNView
+        let touchPosition = recognizer.location(in: sceneView)
+        let hitResult = sceneView.hitTest(touchPosition, options: [:])
+        sceneView.hitTest(touchPosition, options: [SCNHitTestOption.boundingBoxOnly: true])
+        
+        if !hitResult.isEmpty {
+            print("Am hit ...")
+            //PositionTextNode(hitTestResult: hitResult)
+        }
+        print("Am hit 2 ...")
+        hitResult.
+        textNode.position = SCNVector3(hitResult.worldTransform.)*/
+    }
+    
     func PlaceTextNode() {
         textNode.scale = SCNVector3(x:0.001, y:0.001, z:0.001)
         textNode.geometry = txtScnText
-        textNode.position = SCNVector3(x:-0.1,y:-0.15,z:-0.5)
-        self.anSceneView.scene.rootNode.addChildNode(textNode)
+        textNode.position = SCNVector3(x:-0.1,y:-0.15,z:-0.1)
+        //self.anSceneView.scene.rootNode.addChildNode(textNode)
+        if _ParentNodeForTextNode == nil {
+            return
+        }
+        _ParentNodeForTextNode.addChildNode(textNode)
     }
+    
+    /*func PositionTextNode(hitTestResult : SCNHitTestResult) {
+        textNode.position = SCNVector3(hitTestResult.modelTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
+    }*/
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -134,7 +187,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
                 dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] as NSDictionary?
                 if let myDictionary = dictionary
                 {
-                    print("DeviceID : \(myDictionary["DeviceID"] ?? "default DeviceID")")
+                    //print("DeviceID : \(myDictionary["DeviceID"] ?? "default DeviceID")")
                     var anEmitParam = myDictionary.value(forKey: "DeviceEmittingParams") as? String
                     if (anEmitParam == nil) {
                         //print("DeviceEmittingParams 1 : \(self._sDisplayMessage)")
@@ -209,7 +262,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         //textNode.constraints = [SCNBillboardConstraint()]
         //textNode.orientation = SCNVector3Make(transform.m41, transform.m42, transform.m43)
         self.anSceneView.scene.rootNode.addChildNode(textNode)*/
-        print("Received message : " + self._sDisplayMessage + " Trying to show @ ", position.x, position.y, position.z)
+        //print("Received message : " + self._sDisplayMessage + " Trying to show @ ", position.x, position.y, position.z)
     }
     
     /*
