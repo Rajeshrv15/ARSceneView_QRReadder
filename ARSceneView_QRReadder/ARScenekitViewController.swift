@@ -40,8 +40,6 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         
         super.viewDidLoad()
         
-        // Do any additional setup after loading the view.
-        
         // Set the view's delegate
         anSceneView.delegate = self
         
@@ -54,12 +52,11 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         // Set the scene to the view
         anSceneView.scene = scene
         
-        self.anSceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]//ARSCNDebugOptions.showWorldOrigin,
+        //self.anSceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]//ARSCNDebugOptions.showWorldOrigin,
         self.anSceneView.showsStatistics = true
         //self.anSceneView.session.run(configuration)
         self.anSceneView.delegate = self
-        /*let anTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ShowInThisLocation))
-        self.anSceneView.addGestureRecognizer(anTapGestureRecognizer)*/
+        
         
         ReadConnectionDetails() //Read the connection details from QR code
         
@@ -94,25 +91,12 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         }
     }
     
-    @objc func ShowInThisLocation(recognizer: UITapGestureRecognizer) {
-        /*let sceneView = recognizer.view as! SCNView
-        let touchPosition = recognizer.location(in: sceneView)
-        let hitResult = sceneView.hitTest(touchPosition, options: [:])
-        sceneView.hitTest(touchPosition, options: [SCNHitTestOption.boundingBoxOnly: true])
-        
-        if !hitResult.isEmpty {
-            print("Am hit ...")
-            //PositionTextNode(hitTestResult: hitResult)
-        }
-        print("Am hit 2 ...")
-        hitResult.
-        textNode.position = SCNVector3(hitResult.worldTransform.)*/
-    }
-    
     func PlaceTextNode() {
-        textNode.scale = SCNVector3(x:0.001, y:0.001, z:0.001)
+        textNode.scale = SCNVector3(x:0.01, y:0.01, z:0.01)
+        //textNode.scale = SCNVector3(x:0.001, y:0.001, z:0.001)
         textNode.geometry = txtScnText
-        textNode.position = SCNVector3(x:-0.1,y:-0.15,z:-0.1)
+        //textNode.position = SCNVector3(x:-0.1,y:-0.15,z:-0.1)
+        //textNode.position = SCNVector3(x:0,y:0.1,z:0)
         //self.anSceneView.scene.rootNode.addChildNode(textNode)
         if _ParentNodeForTextNode == nil {
             return
@@ -120,10 +104,6 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         _ParentNodeForTextNode.addChildNode(textNode)
     }
     
-    /*func PositionTextNode(hitTestResult : SCNHitTestResult) {
-        textNode.position = SCNVector3(hitTestResult.modelTransform.columns.3.x,hitTestResult.worldTransform.columns.3.y, hitTestResult.worldTransform.columns.3.z)
-    }*/
-
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -233,11 +213,29 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
     }
     
     @objc func UpdateTextNode() {
-        guard let pointofView = self.anSceneView.pointOfView else {return}
-        let transform = pointofView.transform
-        let orientation = SCNVector3(-transform.m31, -transform.m32, -transform.m33)
-        let location = SCNVector3(transform.m41, transform.m42, transform.m43)
-        let position = orientation + location
+        if _ParentNodeForTextNode == nil {
+            return
+        }
+        if _ParentNodeForTextNode != nil && _ParentNodeForTextNode.childNodes.count > 0 {
+            _ParentNodeForTextNode.childNodes .forEach { item in
+                item.removeFromParentNode()
+            }
+        }
+        
+        let lstSCNNodes = GetIndividualTextNode(stDisplayText: self._sDisplayMessage)
+        if lstSCNNodes.count == 0 {
+            return
+        }
+        lstSCNNodes .forEach { item in
+            _ParentNodeForTextNode.addChildNode(item)
+        }
+        
+        return
+        //guard let pointofView = self.anSceneView.pointOfView else {return}
+        //let transform = pointofView.transform
+        //let orientation = SCNVector3(-transform.m31, -transform.m32, -transform.m33)
+        //let location = SCNVector3(transform.m41, transform.m42, transform.m43)
+        //let position = orientation + location
         //if let imageAnchor = anchor as? ARImageAnchor {
         textNode.removeFromParentNode()
         //self._sDisplayMessage += " Try adding this text ..."
@@ -246,7 +244,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         let material = SCNMaterial()
         material.diffuse.contents = UIColor.black
         txtScnText.materials = [material]
-        //txtScnText.containerFrame = CGRect(origin: .zero, size: CGSize(width: 180, height: 180))
+        txtScnText.containerFrame = CGRect(origin: .zero, size: CGSize(width: 250, height: 100))
         txtScnText.font = UIFont(name: "Helvetica Neue", size: 15)
         
         txtScnText.isWrapped = true
@@ -255,14 +253,34 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         textNode.eulerAngles = SCNVector3((eulerAngles?.x)!, (eulerAngles?.y)!, (eulerAngles?.z)! + Float(1.57))
         
         PlaceTextNode()
-        /*textNode.scale = SCNVector3(x:0.001, y:0.001, z:0.001)
-        textNode.geometry = txtScnText
-        //textNode.position = position
-        textNode.position = SCNVector3(x:0,y:0,z:-0.5)
-        //textNode.constraints = [SCNBillboardConstraint()]
-        //textNode.orientation = SCNVector3Make(transform.m41, transform.m42, transform.m43)
-        self.anSceneView.scene.rootNode.addChildNode(textNode)*/
-        //print("Received message : " + self._sDisplayMessage + " Trying to show @ ", position.x, position.y, position.z)
+    }
+    
+    func GetIndividualTextNode(stDisplayText : String) -> Array<SCNNode> {
+        var lstSCNodesText = [SCNNode()]
+        let splitTextArray = stDisplayText.split(separator: ",")
+        var iYPosition = 0.01
+        let eulerAngles = self.anSceneView.session.currentFrame?.camera.eulerAngles
+        
+        splitTextArray.forEach { item in
+            //print(item)
+            let anTxtScnText = SCNText(string: item, extrusionDepth: 1)
+            let material = SCNMaterial()
+            material.diffuse.contents = UIColor.black
+            anTxtScnText.materials = [material]
+            anTxtScnText.containerFrame = CGRect(origin: .zero, size: CGSize(width: 250, height: 100))
+            anTxtScnText.font = UIFont(name: "Helvetica Neue", size: 15)
+            let anTxtNode = SCNNode()
+            anTxtNode.scale = SCNVector3(x:0.01, y:0.01, z:0.01)
+            //anTxtNode.position = SCNVector3(x: 0, y:Float(iYPosition), z:0)
+            anTxtNode.simdPosition = simd_float3.init(x: 0, y:Float(iYPosition), z:0)
+            anTxtNode.geometry = anTxtScnText
+            anTxtNode.eulerAngles = SCNVector3((eulerAngles?.x)!, (eulerAngles?.y)!, (eulerAngles?.z)! + Float(1.57))
+            lstSCNodesText.append(anTxtNode)
+            iYPosition = iYPosition + 0.4
+            print(iYPosition)
+        }
+        
+        return lstSCNodesText
     }
     
     /*
