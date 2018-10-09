@@ -25,6 +25,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
     
     //Sceen Text to show _DeviceMetrics
     var _ParentNodeForTextNode : SCNNode!
+    var _ParentNodeAnchor : ARObjectAnchor!
     var _DeviceMetrics : String = ""
     var textNode = SCNNode()
     var txtScnText = SCNText(string: "Initializing...", extrusionDepth: 1)
@@ -117,7 +118,8 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             if anchor is ARObjectAnchor {
                 print ("Calendar detected")
                 _ParentNodeForTextNode = node
-                _ParentNodeForTextNode.position = SCNVector3Make(anchor.transform.columns.3.x, anchor.transform.columns.3.y, anchor.transform.columns.3.z)
+                _ParentNodeAnchor = anchor as! ARObjectAnchor
+                //_ParentNodeForTextNode.position = SCNVector3Make(anchor.transform.columns.3.x, anchor.transform.columns.3.y, anchor.transform.columns.3.z)
                 //anchor.
                 /*let text = SCNText(string: "Calendar detected", extrusionDepth: 0.1)
                 text.firstMaterial?.diffuse.contents = UIColor.red
@@ -266,7 +268,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         var lstSCNodesText = [SCNNode()]
         let splitTextArray = stDisplayText.split(separator: ",")
         var iYPosition = 0.01
-        let eulerAngles = self.anSceneView.session.currentFrame?.camera.eulerAngles
+        //let eulerAngles = self.anSceneView.session.currentFrame?.camera.eulerAngles
         
         splitTextArray.forEach { item in
             //print(item)
@@ -274,16 +276,20 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             let material = SCNMaterial()
             material.diffuse.contents = UIColor.black
             anTxtScnText.materials = [material]
-            anTxtScnText.containerFrame = CGRect(origin: .zero, size: CGSize(width: 250, height: 100))
+            //anTxtScnText.containerFrame = CGRect(origin: .zero, size: CGSize(width: 250, height: 100))
             anTxtScnText.font = UIFont(name: "Helvetica Neue", size: 15)
             let anTxtNode = SCNNode()
-            anTxtNode.scale = SCNVector3(x:0.01, y:0.01, z:0.01)
-            //anTxtNode.position = SCNVector3(x: 0, y:Float(iYPosition), z:0)
-            anTxtNode.simdPosition = simd_float3.init(x: 0, y:Float(iYPosition), z:0)
+            anTxtNode.scale = SCNVector3(x:0.001, y:0.001, z:0.001)
+            if _ParentNodeAnchor != nil {
+                //anTxtNode.position = SCNVector3(x: 0, y:Float(iYPosition), z:0)
+                anTxtNode.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
+            }
+            //anTxtNode.position = SCNVector3(x 0, y:Float(iYPosition), z:0)
+           // anTxtNode.simdPosition = simd_float3.init(x: 0, y:Float(iYPosition), z:0)
             anTxtNode.geometry = anTxtScnText
-            anTxtNode.eulerAngles = SCNVector3((eulerAngles?.x)!, (eulerAngles?.y)!, (eulerAngles?.z)! + Float(1.57))
+            //anTxtNode.eulerAngles = SCNVector3((eulerAngles?.x)!, (eulerAngles?.y)!, (eulerAngles?.z)! + Float(1.57))
             lstSCNodesText.append(anTxtNode)
-            iYPosition = iYPosition + 0.4
+            iYPosition = iYPosition + 0.015
             //print(iYPosition)
         }
         
