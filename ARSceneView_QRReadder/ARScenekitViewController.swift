@@ -117,12 +117,13 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             if anchor is ARObjectAnchor {
                 print ("Calendar detected")
                 _ParentNodeForTextNode = node
+                _ParentNodeForTextNode.position = SCNVector3Make(anchor.transform.columns.3.x, anchor.transform.columns.3.y, anchor.transform.columns.3.z)
                 //anchor.
                 /*let text = SCNText(string: "Calendar detected", extrusionDepth: 0.1)
                 text.firstMaterial?.diffuse.contents = UIColor.red
                 var txtNode = SCNNode(geometry: text)
-                textNode.scale = SCNVector3(0.01,0.01,0.01)
-                textNode.position = node.position
+                txtNode.scale = SCNVector3(0.01,0.01,0.01)
+                txtNode.position = node.position
                 print(node.position.x)
                 print(node.position.y)
                 print(node.position.z)
