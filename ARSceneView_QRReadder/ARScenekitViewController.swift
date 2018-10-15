@@ -63,32 +63,6 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         
         timerReadFromServer = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(ReadDisplayValueFromServer), userInfo: nil, repeats: true)
         timerUpdateTextNode = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(UpdateTextNode), userInfo: nil, repeats: true)
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(anDidTap))
-        anSceneView.addGestureRecognizer(tapGesture)
-    }
-    
-    @objc func anDidTap(recognizer : UIGestureRecognizer) {
-        let scenView = recognizer.view as! SCNView
-        let touchLocation = recognizer.location(in: scenView)
-        let hitResults = scenView.hitTest(touchLocation, options: [:])
-        
-        if !hitResults.isEmpty {
-            let node = hitResults[0].node
-            print("Node detected on tap")
-        }
-        /*let results = self.anSceneView.hitTest(gesture.location(in: gesture.view), types: ARHitTestResult.ResultType.featurePoint)
-        guard let result: ARHitTestResult = results.first else {
-            return
-        }
-        
-        let tappedNode = self.anSceneView.hitTest(gesture.location(in: gesture.view), options: [:])
-        
-        if !tappedNode.isEmpty {
-            print("Tap captured")
-            return
-        }
-        print("Not captured")*/
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -116,24 +90,12 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         if #available(iOS 12.0, *) {
             if anchor is ARObjectAnchor {
-                print ("Calendar detected")
+                print ("Object detected \(node)")
                 _ParentNodeForTextNode = node
-                _ParentNodeAnchor = anchor as! ARObjectAnchor
-                //_ParentNodeForTextNode.position = SCNVector3Make(anchor.transform.columns.3.x, anchor.transform.columns.3.y, anchor.transform.columns.3.z)
-                //anchor.
-                /*let text = SCNText(string: "Calendar detected", extrusionDepth: 0.1)
-                text.firstMaterial?.diffuse.contents = UIColor.red
-                var txtNode = SCNNode(geometry: text)
-                txtNode.scale = SCNVector3(0.01,0.01,0.01)
-                txtNode.position = node.position
-                print(node.position.x)
-                print(node.position.y)
-                print(node.position.z)
-                node.addChildNode(txtNode)*/
-                
+                _ParentNodeAnchor = anchor as? ARObjectAnchor
             }
         } else {
-            print ("Calendar not detected")
+            print ("Scan object not detected")
         }
     }
     
@@ -184,10 +146,10 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
        _timerCount = _timerCount + 1
        print("Current timer count  \(_timerCount)")
        print(" DeviceID : \(oDevID)")
-       //print(" DeviceDataUrl : \(oDevDataUrl)")
-       //print(" UserName : \(oUsrName)")
-       //print(" Password : \(oPass)")
-       //print(" Previous Response : \(self._DeviceMetrics)")
+       /*print(" DeviceDataUrl : \(oDevDataUrl)")
+       print(" UserName : \(oUsrName)")
+       print(" Password : \(oPass)")
+       print(" Previous Response : \(self._DeviceMetrics)")*/
        GetDeviceMetricsFromServer(anAccessURL: oDevDataUrl, anUserName: oUsrName, anPassword: oPass)
        
         if _DeviceMetrics.isEmpty {
@@ -254,12 +216,12 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
                 item.removeFromParentNode()
             }
         }
-        
-        //let lstSCNNodes = GetIndividualTextNode(stDisplayText: self._sDisplayMessage)
-        let lstSCNNodes = GetIndividualSpiteTextNode2(stDisplayText: self._sDisplayMessage)
+
+        let lstSCNNodes = GetIndividualSpiteTextNode(stDisplayText: self._sDisplayMessage)
         if lstSCNNodes.count == 0 {
             return
         }
+        
         var iYPosition = 0.1
         lstSCNNodes .forEach { item in
             item.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
@@ -268,33 +230,23 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         }
     }
     
-    func GetIndividualSpiteTextNode2(stDisplayText: String) -> Array<SCNNode> {
+    func GetIndividualSpiteTextNode(stDisplayText: String) -> Array<SCNNode> {
         
         var lstSCNodesText = [SCNNode()]
         let splitTextArray = stDisplayText.split(separator: ",")
-        //let stDisplayText2 = stDisplayText.replacingOccurrences(of: ",", with: "\n")
+
         var iYPosition = 5
         var iXPosition = CGFloat(5)
         
         
-            let skScene = SKScene(size:CGSize(width: 1600, height: 200))
-            skScene.scaleMode = .aspectFit
-            skScene.shouldEnableEffects = true
-            skScene.backgroundColor = UIColor.clear
-            skScene.blendMode = .alpha
-            //skScene.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
-        var i : integer_t = 0
+        let skScene = SKScene(size:CGSize(width: 1600, height: 200))
+        skScene.scaleMode = .aspectFit
+        skScene.shouldEnableEffects = true
+        skScene.backgroundColor = UIColor.clear
+        skScene.blendMode = .alpha
+        
         splitTextArray.forEach { item in
             let box = SKSpriteNode(color: UIColor.black, size: CGSize(width: 200, height: 50))
-            //let box = SKShapeNode(rect: CGRect(x: 0, y: 0, width: 200, height: 50), cornerRadius: 10)
-            //box.fillColor = UIColor.black
-            /*if (i == 1)
-            {
-                box.color = UIColor.black
-            }
-            if (i == 2) {
-                box.color = UIColor.green
-            }*/
             iXPosition = iXPosition + skScene.frame.minX + CGFloat(250)
             let label = SKLabelNode(fontNamed:"ArialMT")
             label.text = String(item)
@@ -309,146 +261,20 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + (box.size.height/2))
             //box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + CGFloat(25))
             
-            //box.anchorPoint = CGPoint(x:0 + CGFloat(iYPosition), y: 0.5 + CGFloat(iYPosition))
             box.addChild(label)
             box.yScale=box.yScale * -1
             skScene.addChild(box)
             iYPosition = iYPosition + 100
-            
-            i = i + 1
         }
-            let plane = SCNPlane(width: CGFloat(0.4), height: CGFloat(0.1))
-            //plane.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
-            plane.firstMaterial!.diffuse.contents = skScene
-            
-            let finalDisplayNode = SCNNode(geometry: plane)
-            //finalDisplayNode.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
-            
-            lstSCNodesText.append(finalDisplayNode)
-            //iYPosition = iYPosition + 0.015
         
-        return lstSCNodesText
-    }
-    
-    func GetIndividualSpiteTextNode1(stDisplayText: String) -> Array<SCNNode> {
-        
-        var lstSCNodesText = [SCNNode()]
-        let splitTextArray = stDisplayText.split(separator: ",")
-        //let stDisplayText2 = stDisplayText.replacingOccurrences(of: ",", with: "\n")
-        var iYPosition = 1
-        
-        
-        let skScene = SKScene(size:CGSize(width: 600, height: 200))
-        skScene.scaleMode = .aspectFit
-        skScene.shouldEnableEffects = true
-        skScene.backgroundColor = UIColor.yellow
-        skScene.blendMode = .alpha
-        //skScene.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
-        splitTextArray.forEach { item in
-            let box = SKSpriteNode(color: UIColor.black, size: CGSize(width: 50, height: 50))
-            
-            let label = SKLabelNode(fontNamed:"ArialMT")
-            label.text = String(item)
-            label.position = CGPoint(x: box.frame.width/2, y: 0)
-            label.horizontalAlignmentMode = .center
-            label.verticalAlignmentMode = .center
-            label.fontSize =  25
-            label.fontColor = UIColor.red
-            //box.position = CGPoint(x: skScene.frame.minX, y: skScene.frame.minY + (box.size.height/2))
-            box.position = CGPoint(x: skScene.frame.minX + CGFloat(iYPosition), y: skScene.frame.minY + (box.size.height/2))
-            box.anchorPoint = CGPoint(x:0 + CGFloat(iYPosition), y: 0.5 + CGFloat(iYPosition))
-            box.addChild(label)
-            box.yScale=box.yScale * -1
-            skScene.addChild(box)
-            iYPosition = iYPosition + 60
-        }
-        let plane = SCNPlane(width: CGFloat(0.1), height: CGFloat(0.1))
-        //plane.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
+        let plane = SCNPlane(width: CGFloat(0.4), height: CGFloat(0.1))
         plane.firstMaterial!.diffuse.contents = skScene
-        
         let finalDisplayNode = SCNNode(geometry: plane)
-        //finalDisplayNode.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
-        
         lstSCNodesText.append(finalDisplayNode)
-        //iYPosition = iYPosition + 0.015
         
         return lstSCNodesText
     }
     
-    func GetIndividualSpiteTextNode(stDisplayText: String) -> Array<SCNNode> {
-        
-        var lstSCNodesText = [SCNNode()]
-        let splitTextArray = stDisplayText.split(separator: ",")
-        //let stDisplayText2 = stDisplayText.replacingOccurrences(of: ",", with: "\n")
-        //var iYPosition = 0.01
-        
-        splitTextArray.forEach { item in
-            let skScene = SKScene(size:CGSize(width: 350, height: 350))
-            skScene.scaleMode = .aspectFit
-            skScene.shouldEnableEffects = true
-            skScene.backgroundColor = UIColor.yellow
-            skScene.blendMode = .alpha
-            //skScene.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
-            
-            let box = SKSpriteNode(color: UIColor.black, size: CGSize(width: 350, height: 350))
-            
-            let label = SKLabelNode(fontNamed:"Helvetica Neue")
-            label.text = String(item)
-            label.position = CGPoint(x: box.frame.width/2, y: 0)
-            label.horizontalAlignmentMode = .center
-            label.verticalAlignmentMode = .center
-            label.fontSize =  box.frame.size.height / 4
-            label.fontColor = UIColor.red
-            box.position = CGPoint(x: skScene.frame.minX, y: skScene.frame.minY + (box.size.height/2))
-            box.anchorPoint = CGPoint(x:0, y: 0.5)
-            box.addChild(label)
-            box.yScale=box.yScale * -1
-            skScene.addChild(box)
-            
-            let plane = SCNPlane(width: CGFloat(0.1), height: CGFloat(0.1))
-            //plane.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
-            plane.firstMaterial!.diffuse.contents = skScene
-
-            let finalDisplayNode = SCNNode(geometry: plane)
-            //finalDisplayNode.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
-            
-            lstSCNodesText.append(finalDisplayNode)
-            //iYPosition = iYPosition + 0.015
-        }
-        return lstSCNodesText
-    }
-    
-    func GetIndividualTextNode(stDisplayText : String) -> Array<SCNNode> {
-        var lstSCNodesText = [SCNNode()]
-        let splitTextArray = stDisplayText.split(separator: ",")
-        var iYPosition = 0.01
-        //let eulerAngles = self.anSceneView.session.currentFrame?.camera.eulerAngles
-        
-        splitTextArray.forEach { item in
-            //print(item)
-            let anTxtScnText = SCNText(string: item, extrusionDepth: 1)
-            let material = SCNMaterial()
-            material.diffuse.contents = UIColor.black
-            anTxtScnText.materials = [material]
-            //anTxtScnText.containerFrame = CGRect(origin: .zero, size: CGSize(width: 250, height: 100))
-            anTxtScnText.font = UIFont(name: "Helvetica Neue", size: 15)
-            let anTxtNode = SCNNode()
-            anTxtNode.scale = SCNVector3(x:0.001, y:0.001, z:0.001)
-            if _ParentNodeAnchor != nil {
-                //anTxtNode.position = SCNVector3(x: 0, y:Float(iYPosition), z:0)
-                anTxtNode.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
-            }
-            //anTxtNode.position = SCNVector3(x 0, y:Float(iYPosition), z:0)
-           // anTxtNode.simdPosition = simd_float3.init(x: 0, y:Float(iYPosition), z:0)
-            anTxtNode.geometry = anTxtScnText
-            //anTxtNode.eulerAngles = SCNVector3((eulerAngles?.x)!, (eulerAngles?.y)!, (eulerAngles?.z)! + Float(1.57))
-            lstSCNodesText.append(anTxtNode)
-            iYPosition = iYPosition + 0.015
-            //print(iYPosition)
-        }
-        
-        return lstSCNodesText
-    }    
 }
 
 struct IoTDeviceData {
