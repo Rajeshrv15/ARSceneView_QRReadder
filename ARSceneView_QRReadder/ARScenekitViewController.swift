@@ -27,6 +27,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
     var _ParentNodeForTextNode : SCNNode!
     var _ParentNodeAnchor : ARObjectAnchor!
     var _DeviceMetrics : String = ""
+    var _NewLocationSCNVector3 : SCNVector3!
     var textNode = SCNNode()
     var txtScnText = SCNText(string: "Initializing...", extrusionDepth: 1)
     let configuration = ARWorldTrackingConfiguration()
@@ -69,12 +70,12 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         super.viewWillAppear(animated)
         if #available(iOS 12.0, *) {
             guard let anRefCalendarObject = ARReferenceObject.referenceObjects(inGroupNamed: "anARResources", bundle: nil) else {
-                print("unable to load resource")
+                print("Unable to load resource")
                 return
             }
             configuration.detectionObjects = anRefCalendarObject
             self.anSceneView.session.run(configuration)
-            print("Calendar Resource loaded...")
+            print("Object resource loaded...")
         } else {
             // Fallback on earlier versions
         }
@@ -102,6 +103,23 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let currentTouchPoint = touches.first?.location(in: anSceneView) else { return }
+        
+        let result = anSceneView.hitTest(currentTouchPoint, options: nil)
+        
+        if let hitResult = result.first{
+            
+            let newPosition2 = hitResult.localCoordinates
+            
+            if let tappedNode = result.first?.node {
+                
+                //tappedNode.position = SCNVector3Make(tappedNode.position.x+newPosition2.x, tappedNode.position.y+newPosition2.y, tappedNode.position.z)
+                _NewLocationSCNVector3 = SCNVector3Make(tappedNode.position.x+newPosition2.x, tappedNode.position.y+newPosition2.y, tappedNode.position.z)
+            }
+        }
     }
     
 
@@ -224,7 +242,12 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         
         var iYPosition = 0.1
         lstSCNNodes .forEach { item in
-            item.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
+            if _NewLocationSCNVector3 != nil {
+                item.position = _NewLocationSCNVector3
+            }
+            else {
+                item.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
+            }
             _ParentNodeForTextNode.addChildNode(item)
             iYPosition = iYPosition + 0.015
         }
@@ -239,21 +262,30 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         var iXPosition = CGFloat(5)
         
         
-        let skScene = SKScene(size:CGSize(width: 1600, height: 200))
+        let skScene = SKScene(size:CGSize(width: 1600, height: 300))
         skScene.scaleMode = .aspectFit
         skScene.shouldEnableEffects = true
         skScene.backgroundColor = UIColor.clear
         skScene.blendMode = .alpha
         
         splitTextArray.forEach { item in
-            let box = SKSpriteNode(color: UIColor.black, size: CGSize(width: 200, height: 50))
             iXPosition = iXPosition + skScene.frame.minX + CGFloat(250)
+            
+            /*let box = SKSpriteNode(color: UIColor.black, size: CGSize(width: 200, height: 50))
             //to show in row
             //box.position = CGPoint(x: skScene.frame.minX , y: skScene.frame.minY + (box.size.height/2) + CGFloat(iYPosition))
             //to show in column
             box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + (box.size.height/2))
             //box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + CGFloat(25))
-            box.yScale=box.yScale * -1
+            box.yScale=box.yScale * -1*/
+            
+            let Circle = SKShapeNode(circleOfRadius: 100 ) // Size of Circle = Radius setting.
+            Circle.position = CGPoint(x:iXPosition,y:150)
+            Circle.name = "defaultCircle"
+            Circle.strokeColor = UIColor.black
+            Circle.glowWidth = 1.0
+            Circle.fillColor = UIColor.black
+            Circle.yScale=Circle.yScale * -1
             
             let label = SKLabelNode(fontNamed:"ArialMT")
             label.text = String(item)
@@ -264,8 +296,11 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             label.fontColor = UIColor.red
 
             
-            box.addChild(label)
-            skScene.addChild(box)
+            /*box.addChild(label)
+            skScene.addChild(box)*/
+            
+            Circle.addChild(label)
+            skScene.addChild(Circle)
             
             //iYPosition = iYPosition + 100
         }
