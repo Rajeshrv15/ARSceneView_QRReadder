@@ -204,7 +204,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
                     var anEmitParam = myDictionary.value(forKey: "DeviceEmittingParams") as? String
                     if (anEmitParam == nil) {
                         //print("DeviceEmittingParams 1 : \(self._sDisplayMessage)")
-                        anEmitParam = "de1 \(_timerCount),de2 \(_timerCount),de3 \(_timerCount)"
+                        anEmitParam = "de1 \(_timerCount),de2 \(_timerCount),de3 \(_timerCount),de4 \(_timerCount)"
                         self._sDisplayMessage = anEmitParam!
                     }
                     else {
@@ -273,34 +273,51 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         var lstSCNodesText = [SCNNode()]
         let splitTextArray = stDisplayText.split(separator: ",")
         //let stDisplayText2 = stDisplayText.replacingOccurrences(of: ",", with: "\n")
-        var iYPosition = 1
+        var iYPosition = 5
+        var iXPosition = CGFloat(5)
         
         
-            let skScene = SKScene(size:CGSize(width: 600, height: 200))
+            let skScene = SKScene(size:CGSize(width: 1600, height: 200))
             skScene.scaleMode = .aspectFit
             skScene.shouldEnableEffects = true
-            //skScene.backgroundColor = UIColor.yellow
+            skScene.backgroundColor = UIColor.clear
             skScene.blendMode = .alpha
             //skScene.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
+        var i : integer_t = 0
         splitTextArray.forEach { item in
-            let box = SKSpriteNode(color: UIColor.black, size: CGSize(width: 600, height: 50))
-            
+            let box = SKSpriteNode(color: UIColor.black, size: CGSize(width: 200, height: 50))
+            //let box = SKShapeNode(rect: CGRect(x: 0, y: 0, width: 200, height: 50), cornerRadius: 10)
+            //box.fillColor = UIColor.black
+            /*if (i == 1)
+            {
+                box.color = UIColor.black
+            }
+            if (i == 2) {
+                box.color = UIColor.green
+            }*/
+            iXPosition = iXPosition + skScene.frame.minX + CGFloat(250)
             let label = SKLabelNode(fontNamed:"ArialMT")
             label.text = String(item)
             label.position = CGPoint(x: 0, y: 0)
-            label.horizontalAlignmentMode = .left
+            label.horizontalAlignmentMode = .center
             label.verticalAlignmentMode = .center
             label.fontSize =  50
             label.fontColor = UIColor.red
-            //box.position = CGPoint(x: skScene.frame.minX, y: skScene.frame.minY + (box.size.height/2))
-            box.position = CGPoint(x: skScene.frame.minX , y: skScene.frame.minY + (box.size.height/2) + CGFloat(iYPosition))
-           // box.anchorPoint = CGPoint(x:0 + CGFloat(iYPosition), y: 0.5 + CGFloat(iYPosition))
+            //to show in row
+            //box.position = CGPoint(x: skScene.frame.minX , y: skScene.frame.minY + (box.size.height/2) + CGFloat(iYPosition))
+            //to show in column
+            box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + (box.size.height/2))
+            //box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + CGFloat(25))
+            
+            //box.anchorPoint = CGPoint(x:0 + CGFloat(iYPosition), y: 0.5 + CGFloat(iYPosition))
             box.addChild(label)
             box.yScale=box.yScale * -1
             skScene.addChild(box)
-            iYPosition = iYPosition + 60
+            iYPosition = iYPosition + 100
+            
+            i = i + 1
         }
-            let plane = SCNPlane(width: CGFloat(0.1), height: CGFloat(0.1))
+            let plane = SCNPlane(width: CGFloat(0.4), height: CGFloat(0.1))
             //plane.position = SCNVector3(_ParentNodeAnchor.transform.columns.3.x, Float(iYPosition), _ParentNodeAnchor.transform.columns.3.z)
             plane.firstMaterial!.diffuse.contents = skScene
             
