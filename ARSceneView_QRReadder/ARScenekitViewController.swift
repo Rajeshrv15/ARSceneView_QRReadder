@@ -31,7 +31,8 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
     var textNode = SCNNode()
     var txtScnText = SCNText(string: "Initializing...", extrusionDepth: 1)
     let configuration = ARWorldTrackingConfiguration()
-    var _sDisplayMessage : String = "Initializing..."
+    var _sDisplayMetrics : String = "Initializing..."
+    var _sDisplayMessage : String!
     
     //timer controller to refresh page
     var _timerCount : Int = 0
@@ -175,6 +176,8 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             return
         }
        var dictionary:NSDictionary?
+       _sDisplayMetrics = ""
+       _sDisplayMessage = ""
        if let data = _DeviceMetrics.data(using: String.Encoding.utf8) {
             do {
                 dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] as NSDictionary?
@@ -182,12 +185,15 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
                 {
                     //print("DeviceID : \(myDictionary["DeviceID"] ?? "default DeviceID")")
                     var anEmitParam = myDictionary.value(forKey: "DeviceEmittingParams") as? String
-                    if (anEmitParam == nil) {
+                    if (anEmitParam != nil) {
                         //print("DeviceEmittingParams 1 : \(self._sDisplayMessage)")
-                        anEmitParam = "de1 \(_timerCount),de2 \(_timerCount),de3 \(_timerCount),de4 \(_timerCount)"
-                        self._sDisplayMessage = anEmitParam!
+                        //anEmitParam = "de1 \(_timerCount),de2 \(_timerCount),de3 \(_timerCount),de4 \(_timerCount)"
+                        self._sDisplayMetrics = anEmitParam!
                     }
-                    else {
+                    anEmitParam = myDictionary.value(forKey: "DeviceEmittingMessage") as? String
+                    if (anEmitParam != nil) {
+                        //print("DeviceEmittingParams 1 : \(self._sDisplayMessage)")
+                        //anEmitParam = "de1 \(_timerCount),de2 \(_timerCount),de3 \(_timerCount),de4 \(_timerCount)"
                         self._sDisplayMessage = anEmitParam!
                     }
                     //print("DeviceEmittingParams 2 : \(self._sDisplayMessage)")
@@ -195,6 +201,15 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             } catch let error as NSError {
                 print(error)
             }
+        }
+        
+        if (_sDisplayMetrics == "")
+        {
+            _sDisplayMetrics = "de1 \(_timerCount),de2 \(_timerCount),de3 \(_timerCount),de4 \(_timerCount)"
+        }
+        if (_sDisplayMessage == "")
+        {
+            _sDisplayMessage = "This is a test message"
         }
     }
     
@@ -235,7 +250,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             }
         }
 
-        let lstSCNNodes = GetIndividualSpiteTextNode(stDisplayText: self._sDisplayMessage)
+        let lstSCNNodes = GetIndividualSpiteTextNode(stDisplayText: self._sDisplayMetrics)
         if lstSCNNodes.count == 0 {
             return
         }
@@ -257,30 +272,20 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         
         var lstSCNodesText = [SCNNode()]
         let splitTextArray = stDisplayText.split(separator: ",")
-
-        //var iYPosition = 5
+        
         var iXPosition = CGFloat(5)
         
-        
-        let skScene = SKScene(size:CGSize(width: 1600, height: 300))
+        let skScene = SKScene(size:CGSize(width: 1600, height: 600))
         skScene.scaleMode = .aspectFit
         skScene.shouldEnableEffects = true
         skScene.backgroundColor = UIColor.clear
         skScene.blendMode = .alpha
         
         splitTextArray.forEach { item in
-            iXPosition = iXPosition + skScene.frame.minX + CGFloat(250)
+            iXPosition = iXPosition + skScene.frame.minX + CGFloat(350)
             
-            /*let box = SKSpriteNode(color: UIColor.black, size: CGSize(width: 200, height: 50))
-            //to show in row
-            //box.position = CGPoint(x: skScene.frame.minX , y: skScene.frame.minY + (box.size.height/2) + CGFloat(iYPosition))
-            //to show in column
-            box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + (box.size.height/2))
-            //box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + CGFloat(25))
-            box.yScale=box.yScale * -1*/
-            
-            let Circle = SKShapeNode(circleOfRadius: 100 ) // Size of Circle = Radius setting.
-            Circle.position = CGPoint(x:iXPosition,y:150)
+            let Circle = SKShapeNode(circleOfRadius: 150 ) // Size of Circle = Radius setting.
+            Circle.position = CGPoint(x:iXPosition,y:200)
             Circle.name = "defaultCircle"
             Circle.strokeColor = UIColor.black
             Circle.glowWidth = 1.0
@@ -292,7 +297,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             label.position = CGPoint(x: 0, y: 0)
             label.horizontalAlignmentMode = .center
             label.verticalAlignmentMode = .center
-            label.fontSize =  50
+            label.fontSize =  75
             label.fontColor = UIColor.red
 
             
@@ -305,12 +310,42 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             //iYPosition = iYPosition + 100
         }
         
-        let plane = SCNPlane(width: CGFloat(0.4), height: CGFloat(0.1))
+        if _sDisplayMessage != "" {
+            let textNode = GetDisplayMessageNode(skScene: skScene)
+            skScene.addChild(textNode)
+        }
+        
+        let plane = SCNPlane(width: CGFloat(0.4), height: CGFloat(0.2))
         plane.firstMaterial!.diffuse.contents = skScene
         let finalDisplayNode = SCNNode(geometry: plane)
         lstSCNodesText.append(finalDisplayNode)
         
         return lstSCNodesText
+    }
+    
+    func GetDisplayMessageNode(skScene : SKScene) -> SKSpriteNode {
+        let iYPosition = 400
+        let box = SKSpriteNode(color: UIColor.black, size: CGSize(width: 900, height: 100))
+        //to show in row
+
+        box.position = CGPoint(x: skScene.frame.minX + CGFloat(350) , y: skScene.frame.minY + (box.size.height/2) + CGFloat(iYPosition))
+        //to show in column
+        //box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + (box.size.height/2))
+        //box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + CGFloat(25))
+        box.yScale=box.yScale * -1
+        //box.anchorPoint = CGPoint(x:0, y: 0.5)
+        
+        let label = SKLabelNode(fontNamed:"ArialMT")
+        label.text = String(_sDisplayMessage)
+        label.position = CGPoint(x: 0, y: 0)
+        label.horizontalAlignmentMode = .center
+        label.verticalAlignmentMode = .center
+        label.fontSize =  50
+        label.fontColor = UIColor.blue
+        
+        box.addChild(label)
+        
+        return box
     }
     
 }
@@ -319,6 +354,7 @@ struct IoTDeviceData {
     let DeviceID: String
     let DeviceIoTHub: String
     let DeviceEmittingParams: String
+    let DeviceEmittingMessage: String
 }
 
 func + (left: SCNVector3, right:SCNVector3) -> SCNVector3 {
