@@ -235,7 +235,7 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         var lstSCNodesText = [SCNNode()]
         let splitTextArray = stDisplayText.split(separator: ",")
 
-        var iYPosition = 5
+        //var iYPosition = 5
         var iXPosition = CGFloat(5)
         
         
@@ -248,6 +248,13 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
         splitTextArray.forEach { item in
             let box = SKSpriteNode(color: UIColor.black, size: CGSize(width: 200, height: 50))
             iXPosition = iXPosition + skScene.frame.minX + CGFloat(250)
+            //to show in row
+            //box.position = CGPoint(x: skScene.frame.minX , y: skScene.frame.minY + (box.size.height/2) + CGFloat(iYPosition))
+            //to show in column
+            box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + (box.size.height/2))
+            //box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + CGFloat(25))
+            box.yScale=box.yScale * -1
+            
             let label = SKLabelNode(fontNamed:"ArialMT")
             label.text = String(item)
             label.position = CGPoint(x: 0, y: 0)
@@ -255,16 +262,12 @@ class ARScenekitViewController: UIViewController, ARSCNViewDelegate, QRViewContr
             label.verticalAlignmentMode = .center
             label.fontSize =  50
             label.fontColor = UIColor.red
-            //to show in row
-            //box.position = CGPoint(x: skScene.frame.minX , y: skScene.frame.minY + (box.size.height/2) + CGFloat(iYPosition))
-            //to show in column
-            box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + (box.size.height/2))
-            //box.position = CGPoint(x: CGFloat(iXPosition), y: skScene.frame.minY + CGFloat(25))
+
             
             box.addChild(label)
-            box.yScale=box.yScale * -1
             skScene.addChild(box)
-            iYPosition = iYPosition + 100
+            
+            //iYPosition = iYPosition + 100
         }
         
         let plane = SCNPlane(width: CGFloat(0.4), height: CGFloat(0.1))
